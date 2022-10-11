@@ -155,7 +155,7 @@ router.post("/", async (req, res) => {
         //const h = await worker.save()
          res.status(200).send("anda")      
      } catch (error) {
-         res.status(500).send("entro al catch")        
+         res.status(500).send("entro al catch",error.message)        
      }
  })
 // router.put('/:id', async (req, res, next) => {
