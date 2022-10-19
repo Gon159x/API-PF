@@ -42,7 +42,7 @@ router.get("/", async (req, res, next) => {
           include: [{ model: Country }],
         },
         Contract,
-        Chat,
+        { model: User , as : "Favorites"}
       ],
     });
 
@@ -103,8 +103,7 @@ router.post("/", async (req, res) => {
  router.put('/:id', async (req, res, next) => {   
      const { id } = req.params;
      const {certification, description, jobs, premium} = req.body; 
-     console.log("hola req.body abajo")
-     console.log(req.body) 
+
      try {
         const worker = await Worker.findOne({where: {ID: id}})
         //  .then((w)=>{
@@ -112,7 +111,6 @@ router.post("/", async (req, res) => {
         //          certification: certification
         //      })
         //  })
-        console.log(worker)
         //premium ? worker.premium = true : false
         premium ? await worker.update({
             premium: true
@@ -155,7 +153,7 @@ router.post("/", async (req, res) => {
         //const h = await worker.save()
          res.status(200).send("anda")      
      } catch (error) {
-         res.status(500).send("entro al catch",error.message)        
+         res.status(500).send("entro al catch")        
      }
  })
 // router.put('/:id', async (req, res, next) => {
