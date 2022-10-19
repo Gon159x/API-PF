@@ -9,7 +9,7 @@ const cors = require('cors')
 require("./db.js");
 
 const server = express();
-
+//un cambio no tan grande
 
 server.name = "API";
 server.use(cors())
