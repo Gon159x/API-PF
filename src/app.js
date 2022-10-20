@@ -41,7 +41,7 @@ const server = http.createServer(app);
 
 const io = socketio(server, {
     cors: {
-      origin: "https://databasepf.herokuapp.com",
+      origin: "https://font-pf.vercel.app",
         methods: ["GET", "POST"]
     }
 });
