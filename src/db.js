@@ -2,13 +2,13 @@ require("dotenv").config();
 const { Sequelize, Op } = require("sequelize");
 const fs = require("fs");
 const path = require("path");
-const { DB_USER, DB_PASSWORD, DB_HOST,DATABASE_URL  } = process.env;
+const { DB_USER, DB_PASSWORD, DB_HOST,DATABASE_URL   } = process.env;
 
 const sequelize = new Sequelize(
-  DATABASE_URL ,
+  DATABASE_URL,
   { 
     dialectOptions: {
-    useUTC: false, //for reading from database
+    useUTC: false , //for reading from database
     ssl:{
       require:true,
       rejectUnauthorized:false
