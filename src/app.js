@@ -41,7 +41,7 @@ const server = http.createServer(app);
 
 const io = socketio(server, {
     cors: {
-      origin: "https://font-pf.vercel.app",
+      origin: "https://databasepf.herokuapp.com",
         methods: ["GET", "POST"]
     }
 });
@@ -70,12 +70,16 @@ const getUser = (receiverId) => {
 const getSocket = (socketId) => {
   const asArray = Object.entries(users);
   const filtered = asArray.filter(([key, value]) => value.includes(socketId));
+
   //console.log("---------------------->",filtered)
+
   return Object.fromEntries(filtered)
 }
 
 io.on("connection", socket => {
-  //console.log("Se ha conectado un usuario")
+
+  console.log("Se ha conectado un usuario", socket.id)
+
   
     socket.on("addUser",async (userId) => {
 
@@ -85,32 +89,10 @@ io.on("connection", socket => {
       io.emit("getUserId", notificaciones)
     })
 
-    socket.on('messageCreation', async ({id_emisor, id_receptor, texto}) => {
+    socket.on('messageCreation', async ({id_emisor, id_receptor, texto, date, redirect = false}) => {
+      
+      let receptor = getUser(id_receptor)
 
-      let receptor = users[id_receptor]
-        
-        
-      //Enviar evento con el mensaje a el socket apropiado al receptor
-      if (receptor){
-        receptor.forEach(e => io.to(e).emit("createMessage", texto))
-      }
-      //Crear mensaje
-      const message = await Message.create({
-        text:texto,
-      })
-        message.setEmitter(id_emisor)
-        message.setRecibidor(id_receptor)
-    
-      //    socket.on("sendMessage", ({senderId, receiverId, text}) => {
-    //   const user = getUser(receiverId);
-    //   io.to(user?.socketId).emit("getMessage", {
-    //     senderId,
-    //     text
-    //   })
-    // })
-
-      //Buscar chat que este el receptor y el emisor y si no existe crearlo
-      //finorcreate{where : workerID: receptor_id}
       const [chat,created] = await Chat.findOrCreate({
         raw:true,
         where:{[Op.and]:[{[Op.or]: [
@@ -126,9 +108,40 @@ io.on("connection", socket => {
         chat.setGuest(id_receptor)
         chat.setHost(id_emisor)
       }
+      let emisor = getUser(id_emisor)
+      if(redirect){
+        emisor.forEach(e => io.to(e).emit("redirect", {id:chat.id}))
+      }
+
+        if (texto !== "") {
+        
+      //Enviar evento con el mensaje a el socket apropiado al receptor
+      if (receptor){
+        receptor.forEach(e => io.to(e).emit("createMessage", {EmitterID: id_emisor,text:texto,date:date}))
+      }
+      //Crear mensaje
+      const message = await Message.create({
+        text:texto,
+        date: date
+      })
+        message.setEmitter(id_emisor)
+        message.setRecibidor(id_receptor)
+        await message.setChat(chat.id)
+    }
+    
+      //    socket.on("sendMessage", ({senderId, receiverId, text}) => {
+    //   const user = getUser(receiverId);
+    //   io.to(user?.socketId).emit("getMessage", {
+    //     senderId,
+    //     text
+    //   })
+    // })
+
+      //Buscar chat que este el receptor y el emisor y si no existe crearlo
+      //finorcreate{where : workerID: receptor_id}
+      
       //Asociar mensaje al receptor
       //Asociar mensaje al chat
-      await message.setChat(chat.id)
     })
 
 
@@ -169,6 +182,7 @@ io.on("connection", socket => {
       //console.log("Usuario desconectado", socket.id)
       
       const user = getSocket(socket.id)
+
       const userId = Object.keys(user)[0]
       console.log(userId)
       
@@ -178,6 +192,7 @@ io.on("connection", socket => {
      }
       if(socket.id && users)
         removeUser(socket.id)
+
       io.emit("getUsers", users)
     })
 })
